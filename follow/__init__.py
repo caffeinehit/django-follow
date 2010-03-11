@@ -1,3 +1,45 @@
+"""
+
+*************
+Coupons
+*************
+
+.. automodule:: follow
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+====================
+Management
+====================
+
+
+.. automodule:: follow.management
+    :members:
+    :undoc-members:
+    :show-inheritance:
+    
+====================
+Models
+====================
+    
+.. automodule:: follow.models
+    :members:
+    :undoc-members:
+    :show-inheritance:
+    
+====================
+Views
+====================    
+
+.. automodule:: follow.views
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+"""
+
 from models import Follow
 
 
