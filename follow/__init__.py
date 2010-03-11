@@ -1,13 +1,8 @@
 """
 
 *************
-Coupons
+Follow
 *************
-
-.. automodule:: follow
-    :members:
-    :undoc-members:
-    :show-inheritance:
 
 ====================
 Management
