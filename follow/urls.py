@@ -1,8 +1,6 @@
 from django.conf.urls.defaults import *
 
 urlpatterns = patterns('',
-    url('^follow/(?P<username>.*)$', 'follow.views.follow', name = 'follow'),
-    url('^unfollow/(?P<username>.*)$', 'follow.views.unfollow', name = 'unfollow'),
-    url('^block/(?P<username>.*)$', 'follow.views.block', name = 'block'),
-    url('^unblock/(?P<username>.*)$', 'follow.views.unblock', name = 'unblock'),
+    url(r'^follow/(?P<app>.*)/(?P<model>.*)/(?P<id>.*)/$', 'follow.views.follow', name = 'follow'),
+    url(r'^unfollow/(?P<app>.*)/(?P<model>.*)/(?P<id>.*)/$', 'follow.views.unfollow', name = 'unfollow'),
 )
