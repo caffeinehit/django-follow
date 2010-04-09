@@ -5,23 +5,19 @@ Follow
 *************
 
 ====================
-Management
-====================
-
-
-.. automodule:: follow.management
-    :members:
-    :undoc-members:
-    :show-inheritance:
-    
-====================
 Models
 ====================
     
 .. automodule:: follow.models
     :members:
     :undoc-members:
-    :show-inheritance:
+
+====================
+Util
+====================
+.. automodule:: follow.util
+    :members:
+    :undoc-members:
     
 ====================
 Views
@@ -30,8 +26,6 @@ Views
 .. automodule:: follow.views
     :members:
     :undoc-members:
-    :show-inheritance:
-
 
 """
 
