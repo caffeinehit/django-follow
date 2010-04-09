@@ -9,7 +9,7 @@ from util import model_map
 
 class FollowManager(models.Manager):
     def create(self, user, obj, **kwargs):
-        follow = super(FollowManager, self).create(follower = user, **kwargs)
+        follow = super(FollowManager, self).create(follower=user, **kwargs)
         
         rel_name, f_name, m2m = model_map[obj.__class__]
         if m2m:
@@ -36,26 +36,37 @@ class FollowManager(models.Manager):
     
     def get_followers_for_model(self, model):
         """
-        Follow.objects.get_followers_for_model(Celeb) --> [<User: devioustree>, <User: flashingpumpkin>]
+        Usage::
+        
+            >>> Follow.objects.get_followers_for_model(Celeb)
+            [<User: devioustree>, <User: flashingpumpkin>]
+            
         """
         rel_name, f_name, m2m = model_map[model]
         kwargs = {f_name: None}
-        return User.objects.filter(following__in = self.exclude(**kwargs)).distinct()
+        return User.objects.filter(following__in=self.exclude(**kwargs)).distinct()
     
     def get_followers_for_object(self, obj):
         """
-        Follow.objects.get_followers_for_object(celeb) --> [<User: devioustree>]
+        Usage::
+        
+            >>> Follow.objects.get_followers_for_object(celeb)
+            [<User: devioustree>]
         
         When given an object (of any type but must have been previously registered), it returns a queryset
         containing all the users following that object
         """
         rel_name, f_name, m2m = model_map[obj.__class__]
         kwargs = {f_name: obj}
-        return User.objects.filter(following__in = self.filter(**kwargs)).distinct()
+        return User.objects.filter(following__in=self.filter(**kwargs)).distinct()
     
     def get_models_user_follows(self, user):
         """
-        Follow.objects.get_models_user_follows(devioustree) --> [Celeb, Event]
+        Usage:: 
+            
+            >>> Follow.objects.get_models_user_follows(devioustree)
+            [Celeb, Event]
+            
         """
         model_list = []
         for model, (rel_name, f_name, m2m) in model_map.iteritems():
@@ -66,8 +77,12 @@ class FollowManager(models.Manager):
     
     def get_objects_user_follows(self, user, models):
         """
-        Follow.objects.get_objects_user_follows(devioustree, Celeb) --> [<Follow: Andy Ashburner>]
-        Follow.objects.get_objects_user_follows(devioustree, [Celeb, Event]) --> [<Follow: Andy Ashburner>, <Follow: Oscars>]
+        Usage::
+        
+            >>> Follow.objects.get_objects_user_follows(devioustree, Celeb)
+            [<Follow: Andy Ashburner>]
+            >>> Follow.objects.get_objects_user_follows(devioustree, [Celeb, Event])
+            [<Follow: Andy Ashburner>, <Follow: Oscars>]
         """
         kwargs = {}
         if isinstance(models, list):
@@ -81,7 +96,11 @@ class FollowManager(models.Manager):
     
     def get_everything_user_follows(self, user):
         """
-        Follow.objects.get_everything_user_follows(devioustree) --> [<Follow: Andy Ashburner>, <Follow: Oscars>]
+        Usage::
+            
+            >>> Follow.objects.get_everything_user_follows(devioustree)
+            [<Follow: Andy Ashburner>, <Follow: Oscars>]
+            
         """
         return self.filter(follower=user)
 
