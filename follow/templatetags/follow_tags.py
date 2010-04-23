@@ -58,13 +58,13 @@ def follow_class(parser, token):
     """
     
     try:
-        tag, obj, followed, unfollowed = token.split_contents()
+        bits = token.split_contents()
     except:
-        raise template.TemplateSyntaxError("The ``follow_link`` tag requires exactly one argument.")
-    return FollowClassNode(obj, followed, unfollowed)
+        raise template.TemplateSyntaxError("The ``follow_class`` tag requires two or three arguments.")
+    return FollowClassNode(*bits[1:])
 
 class FollowClassNode(template.Node):
-    def __init__(self, obj, followed, unfollowed):
+    def __init__(self, obj, followed, unfollowed=''):
         self.obj = template.Variable(obj)
         
         self.followed = re.subn('(^("|\')|("|\')$)', '', followed)[0]
