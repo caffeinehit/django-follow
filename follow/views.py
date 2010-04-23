@@ -1,13 +1,14 @@
-from follow import follow as _follow, unfollow as _unfollow
-
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
 from django.db.models.loading import cache
-from django.http import HttpResponse, HttpResponseBadRequest
+from django.http import (HttpResponse, HttpResponseBadRequest,
+    HttpResponseRedirect)
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django.utils.translation import gettext as _
+from follow import follow as _follow, unfollow as _unfollow
 
-from django.contrib.auth.models import User
+
 
 def check(func):
     """ 
@@ -22,7 +23,9 @@ def check(func):
             return HttpResponseBadRequest()
         
         func(request, user)
-        return HttpResponse()
+        if request.is_ajax:
+            return HttpResponse('ok')
+        return HttpResponseRedirect(request.META['REFERER'])
     return iCheck
 
 @login_required
