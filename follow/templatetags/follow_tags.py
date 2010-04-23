@@ -12,13 +12,13 @@ def _unfollow_link(object):
     return reverse('unfollow', args=[object._meta.app_label, object._meta.object_name.lower(), object.pk])
 
 @register.tag
-def follow_link(parser, token):
+def follow_url(parser, token):
     """
     Returns either a link to follow or to unfollow.
     
     Usage::
         
-        {% follow_link object %}
+        {% follow_url object %}
         
     """
     
