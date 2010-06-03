@@ -10,7 +10,7 @@ from util import model_map
 class FollowManager(models.Manager):
     def create(self, user, obj, **kwargs):
         follow = super(FollowManager, self).create(follower=user, **kwargs)
-        
+
         rel_name, f_name, m2m = model_map[obj.__class__]
         if m2m:
             field = getattr(follow, f_name)
@@ -19,21 +19,21 @@ class FollowManager(models.Manager):
             setattr(follow, f_name, obj)
         follow.save()
         return follow
-    
+
     def is_user_following(self, user, obj):
         return user in self.get_followers_for_object(obj)
-    
+
     def get_or_create(self, user, obj, **kwargs):
         if not self.is_user_following(user, obj):
             return self.create(user, obj, **kwargs), True
-        
+
         return self.get_object(user, obj, **kwargs), False
-    
+
     def get_object(self, user, obj, **kwargs):
         rel_name, f_name, m2m = model_map[obj.__class__]
         kwargs.update({f_name: obj})
         return self.filter(**kwargs).get(follower=user)
-    
+
     def get_followers_for_model(self, model):
         """
         Usage::
@@ -45,7 +45,7 @@ class FollowManager(models.Manager):
         rel_name, f_name, m2m = model_map[model]
         kwargs = {f_name: None}
         return User.objects.filter(following__in=self.exclude(**kwargs)).distinct()
-    
+
     def get_followers_for_object(self, obj):
         """
         Usage::
@@ -59,7 +59,7 @@ class FollowManager(models.Manager):
         rel_name, f_name, m2m = model_map[obj.__class__]
         kwargs = {f_name: obj}
         return User.objects.filter(following__in=self.filter(**kwargs)).distinct()
-    
+
     def get_models_user_follows(self, user):
         """
         Usage:: 
@@ -74,7 +74,7 @@ class FollowManager(models.Manager):
             if Follow.objects.filter(follower=user).exclude(**kwargs):
                 model_list.append(model)
         return model_list
-    
+
     def get_objects_user_follows(self, user, models):
         """
         Usage::
@@ -93,7 +93,7 @@ class FollowManager(models.Manager):
             rel_name, f_name, m2m = model_map[models]
             kwargs[f_name] = None
         return self.exclude(**kwargs).filter(follower=user)
-    
+
     def get_everything_user_follows(self, user):
         """
         Usage::
@@ -123,11 +123,9 @@ class Follow(models.Model):
 
     def __unicode__(self):
         return '%s' % self.get_object()
-    
+
     def get_object(self):
         for model, (rel_name, f_name, m2m) in model_map.iteritems():
             if hasattr(self, f_name) and getattr(self, f_name):
                 return getattr(self, f_name)
 
-from django.contrib import admin
-admin.site.register(Follow)
