@@ -1,65 +1,43 @@
-from follow import follow as _follow, unfollow as _unfollow, \
-    block as _block, unblock as _unblock
-
-from django.template import RequestContext
-from django.shortcuts import render_to_response
-from django.utils.translation import gettext as _
-
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
+from django.db.models.loading import cache
+from django.http import (HttpResponse, HttpResponseBadRequest,
+    HttpResponseRedirect, HttpResponseServerError)
+from django.shortcuts import render_to_response
+from django.template import RequestContext
+from django.utils.translation import gettext as _
+from follow import follow as _follow, unfollow as _unfollow
+
 
 def check(func):
     """ 
     Check the permissions, http method and login state
     """
-    def iCheck(request, username):
-        if not request.user.is_authenticated():
-            return render_to_response(
-                'follow/error.html', dict(message=_("Please log in first.")),
-                context_instance=RequestContext(request)
-            )
-            
-        if not request.is_ajax():
-            return render_to_response(
-                'follow/error.html', dict(message=_("Wrong method.")),
-                context_instance=RequestContext(request)
-            )
+    def iCheck(request, *args, **kwargs):
+        follow = func(request, *args, **kwargs)
+        if request.is_ajax():
+            return HttpResponse('ok')
         try:
-            user = User.objects.get(username=username)
-        except User.DoesNotExist:
-            return render_to_response(
-                'follow/error.html', dict(message=_("Bad Username")),
-                context_instance=RequestContext(request)
-            )
-        if user == request.user:
-            return render_to_response(
-                'follow/error.html', dict(message=_("You can't %s yourself." % func.__name__)),
-                context_instance=RequestContext(request)
-            )
-        
-        func(request, user)
-        return render_to_response(
-            'follow/success_%s.html' % func.__name__, dict(),
-            context_instance=RequestContext(request)
-        )
+            return HttpResponseRedirect(request.META['HTTP_REFERER'])
+        except KeyError:
+            try:
+                return HttpResponseRedirect(follow.get_object().get_absolute_url())
+            except AttributeError:
+                return HttpResponseServerError('"%s" object of type ``%s`` has no method ``get_absolute_url()``.' % (
+                    unicode(follow.get_object()), follow.get_object().__class__))
     return iCheck
 
+
+@login_required
 @check
-def follow(request, user):
-    _follow(user, request.user)
-    
+def follow(request, app, model, id):
+    model = cache.get_model(app, model)
+    obj = model.objects.get(pk=id)
+    return _follow(request.user, obj)
 
-
+@login_required
 @check
-def unfollow(request, user):
-    _unfollow(user, request.user)
-    
-
-@check
-def block(request, user):
-    _block(request.user, user)
-    
-
-@check
-def unblock(request, user):
-    _unblock(request.user, user)
-
+def unfollow(request, app, model, id):
+    model = cache.get_model(app, model)
+    obj = model.objects.get(pk=id)
+    return _unfollow(request.user, obj)

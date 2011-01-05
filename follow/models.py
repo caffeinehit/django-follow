@@ -5,110 +5,127 @@ from django.db.models import signals
 from django.contrib.auth.models import User
 from django.conf import settings
 
-try:
-    from notification import models as notification
-except ImportError:
-    notification = None
-
-try:
-    import stream
-except:
-    stream = None
-    
-FOLLOW_NOTIFICATION = getattr(settings, 'FOLLOW_NOTIFICATION', False)
+from util import model_map
 
 class FollowManager(models.Manager):
-    def get_followers(self, user):
-        return self.filter(deleted=False, blocked=False, user=user).select_related()
-    def get_followed(self, user):
-        return self.filter(deleted=False, blocked=False, follower=user).select_related()
+    def create(self, user, obj, **kwargs):
+        follow = super(FollowManager, self).create(follower=user, **kwargs)
+
+        rel_name, f_name, m2m = model_map[obj.__class__]
+        if m2m:
+            field = getattr(follow, f_name)
+            field.add(obj)
+        else:
+            setattr(follow, f_name, obj)
+        follow.save()
+        return follow
+
+    def is_user_following(self, user, obj):
+        return user in self.get_followers_for_object(obj)
+
+    def get_or_create(self, user, obj, **kwargs):
+        if not self.is_user_following(user, obj):
+            return self.create(user, obj, **kwargs), True
+
+        return self.get_object(user, obj, **kwargs), False
+
+    def get_object(self, user, obj, **kwargs):
+        rel_name, f_name, m2m = model_map[obj.__class__]
+        kwargs.update({f_name: obj})
+        return self.filter(**kwargs).get(follower=user)
+
+    def get_followers_for_model(self, model):
+        """
+        Usage::
+        
+            >>> Follow.objects.get_followers_for_model(Celeb)
+            [<User: devioustree>, <User: flashingpumpkin>]
+            
+        """
+        rel_name, f_name, m2m = model_map[model]
+        kwargs = {f_name: None}
+        return User.objects.filter(following__in=self.exclude(**kwargs)).distinct()
+
+    def get_followers_for_object(self, obj):
+        """
+        Usage::
+        
+            >>> Follow.objects.get_followers_for_object(celeb)
+            [<User: devioustree>]
+        
+        When given an object (of any type but must have been previously registered), it returns a queryset
+        containing all the users following that object
+        """
+        rel_name, f_name, m2m = model_map[obj.__class__]
+        kwargs = {f_name: obj}
+        return User.objects.filter(following__in=self.filter(**kwargs)).distinct()
+
+    def get_models_user_follows(self, user):
+        """
+        Usage:: 
+            
+            >>> Follow.objects.get_models_user_follows(devioustree)
+            [Celeb, Event]
+            
+        """
+        model_list = []
+        for model, (rel_name, f_name, m2m) in model_map.iteritems():
+            kwargs = {f_name: None}
+            if Follow.objects.filter(follower=user).exclude(**kwargs):
+                model_list.append(model)
+        return model_list
+
+    def get_objects_user_follows(self, user, models):
+        """
+        Usage::
+        
+            >>> Follow.objects.get_objects_user_follows(devioustree, Celeb)
+            [<Follow: Andy Ashburner>]
+            >>> Follow.objects.get_objects_user_follows(devioustree, [Celeb, Event])
+            [<Follow: Andy Ashburner>, <Follow: Oscars>]
+        """
+        kwargs = {}
+        if isinstance(models, list):
+            for model in models:
+                rel_name, f_name, m2m = model_map[model]
+                kwargs[f_name] = None
+        else:
+            rel_name, f_name, m2m = model_map[models]
+            kwargs[f_name] = None
+        return self.exclude(**kwargs).filter(follower=user)
+
+    def get_everything_user_follows(self, user):
+        """
+        Usage::
+            
+            >>> Follow.objects.get_everything_user_follows(devioustree)
+            [<Follow: Andy Ashburner>, <Follow: Oscars>]
+            
+        """
+        return self.filter(follower=user)
 
 class Follow(models.Model):
-    user = models.ForeignKey(
-        User,
-        blank=False,
-        null=False,
-        related_name='followers'
-    )
-
+    """
+    This model allows a user to follow any kind of object
+    """
     follower = models.ForeignKey(
         User,
         blank=False,
         null=False,
-        related_name='following'
+        related_name='following',
     )
 
     datetime = models.DateTimeField(
         auto_now_add=True,
     )
 
-    deleted = models.BooleanField(
-        blank=False,
-        null=False,
-        default=False,
-    )
-
-    blocked = models.BooleanField(
-        blank=False,
-        null=False,
-        default=False,
-    )
-
-    pre_block = None
-    block = None
-
     objects = FollowManager()
 
     def __unicode__(self):
-        return '%s' % self.follower.username
+        return '%s' % self.get_object()
 
-    def block_user(self, status):
-        self.pre_block = self.blocked
-        self.blocked = status
-        if self.blocked and not self.pre_block: # New block
-            self.block = 'add'
-        if not self.blocked and self.pre_block: # Unblock
-            self.block = 'del'
-        else: # no change
-            self.block = None
+    def get_object(self):
+        for model, (rel_name, f_name, m2m) in model_map.iteritems():
+            if hasattr(self, f_name) and getattr(self, f_name):
+                return getattr(self, f_name)
 
-    def delete(self):
-        self.deleted = True
-        self.save()
-
-def save_handler(sender, instance, created, **kwargs):
-    """ Send notifications and register items in the stream :-o """
-    if not created: # Handle blocks!
-        if instance.block and instance.block == 'new':
-            if notification and FOLLOW_NOTIFICATION:
-                notification.send([instance.follower], 'follow_blocked', on_site=False)
-            if stream and FOLLOW_NOTIFICATION:
-                stream.add([instance.user, instance], type='follow_blocked')
-        elif instance.block and instance.block == 'del':
-            if notification and FOLLOW_NOTIFICATION:
-                notification.send([instance.follower], 'follow_unblocked', on_site=False)
-            if stream and FOLLOW_NOTIFICATION:
-                stream.add([instance.user, instance], type='follow_unblocked')
-        else:
-            pass
-        return
-    if notification and FOLLOW_NOTIFICATION:
-        notification.send([instance.user], 'follow_followed', on_site=False)
-    if stream and FOLLOW_NOTIFICATION:
-        stream.add([instance.follower, instance], type='follow_followed')
-
-def delete_handler(sender, instance, **kwargs):
-    """ Send notifications and register items in the stream """
-    if notification and FOLLOW_NOTIFICATION:
-        notification.send([instance.user], 'follow_unfollowed', on_site=False)
-    if stream and FOLLOW_NOTIFICATION:
-        stream.add([instance.follower, instance], type='follow_unfollowed')
-
-signals.post_save.connect(save_handler, sender=Follow)
-signals.post_save.connect(delete_handler, sender=Follow)
-
-if stream:
-    stream.register(Follow)
-
-from django.contrib import admin
-admin.site.register(Follow)
