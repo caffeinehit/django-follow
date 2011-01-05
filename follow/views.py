@@ -18,7 +18,7 @@ def check(func):
         if request.is_ajax():
             return HttpResponse('ok')
         try:
-            if 'ref' in request.GET
+            if 'ref' in request.GET:
                 return HttpResponseRedirect(request.META['HTTP_REFERER'])
             return HttpResponseRedirect(follow.get_object().get_absolute_url())
         except KeyError:
