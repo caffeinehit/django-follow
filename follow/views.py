@@ -18,13 +18,14 @@ def check(func):
         if request.is_ajax():
             return HttpResponse('ok')
         try:
-            return HttpResponseRedirect(request.META['HTTP_REFERER'])
+            if 'ref' in request.GET
+                return HttpResponseRedirect(request.META['HTTP_REFERER'])
+            return HttpResponseRedirect(follow.get_object().get_absolute_url())
         except KeyError:
-            try:
-                return HttpResponseRedirect(follow.get_object().get_absolute_url())
-            except AttributeError:
-                return HttpResponseServerError('"%s" object of type ``%s`` has no method ``get_absolute_url()``.' % (
-                    unicode(follow.get_object()), follow.get_object().__class__))
+            return HttpResponseServerError('No HTTP_REFERER')
+        except AttributeError:
+            return HttpResponseServerError('"%s" object of type ``%s`` has no method ``get_absolute_url()``.' % (
+                unicode(follow.get_object()), follow.get_object().__class__))
     return iCheck
 
 
