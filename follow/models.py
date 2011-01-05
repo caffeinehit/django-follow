@@ -7,6 +7,15 @@ from util import model_map
 
 class FollowManager(models.Manager):
     def create(self, user, obj, **kwargs):
+        """
+        Create a new follow link between a user and an object
+        of a registered model type.
+        
+        Usage::
+            
+            >>> Follow.objects.create(flashingpumpkin, devioustree)
+            <Follow: devioustree>
+        """
         follow = super(FollowManager, self).create(follower=user, **kwargs)
 
         rel_name, f_name, m2m = model_map[obj.__class__]
@@ -19,9 +28,14 @@ class FollowManager(models.Manager):
         return follow
 
     def is_user_following(self, user, obj):
+        """ Returns `True` or `False` """
         return user in self.get_followers_for_object(obj)
 
     def get_or_create(self, user, obj, **kwargs):
+        """ 
+        Almost the same as `FollowManager.objects.create` - behaves the same 
+        as the normal `get_or_create` methods in django though. 
+        """
         if not self.is_user_following(user, obj):
             return self.create(user, obj, **kwargs), True
 
