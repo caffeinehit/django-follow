@@ -8,5 +8,6 @@ setup(
     packages=find_packages(),
     author='Alen Mujezinovic',
     author_email='alen@caffeinehit.com',
-    version='0.1',
+    url='https://github.com/caffeinehit/django-follow',
+    version='0.2',
 )
