@@ -14,6 +14,11 @@ django-follow enables your users to follow any model in your Django application.
 
 ## Test
 
+The repository includes a sample project and application that is configured
+to test `django-follow`.
+
+Clone the repository and cd into the project folder:
+
 	cd project/
 	python manage.py test follow
     

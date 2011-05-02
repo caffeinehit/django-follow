@@ -23,6 +23,11 @@ Usage:
 Test
 ----
 
+The repository includes a sample project and application that is
+configured to test ``django-follow``.
+
+Clone the repository and cd into the project folder:
+
 ::
 
     cd project/
