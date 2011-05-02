@@ -4,7 +4,7 @@ registry = []
 model_map = {}
 
 def followers_for_object(self):
-    from models import Follower
+    from models import Follow
     return Follow.objects.get_followers_for_object(self)
 
 def register(model, field_name = None, m2m = False):

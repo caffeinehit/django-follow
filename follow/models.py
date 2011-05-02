@@ -11,10 +11,6 @@ class FollowManager(models.Manager):
         Create a new follow link between a user and an object
         of a registered model type.
         
-        Usage::
-            
-            >>> Follow.objects.create(flashingpumpkin, devioustree)
-            <Follow: devioustree>
         """
         follow = super(FollowManager, self).create(follower=user, **kwargs)
 
@@ -35,6 +31,9 @@ class FollowManager(models.Manager):
         """ 
         Almost the same as `FollowManager.objects.create` - behaves the same 
         as the normal `get_or_create` methods in django though. 
+
+        Returns a tuple with the `Follow` and either `True` or `False`
+
         """
         if not self.is_user_following(user, obj):
             return self.create(user, obj, **kwargs), True
@@ -42,17 +41,20 @@ class FollowManager(models.Manager):
         return self.get_object(user, obj, **kwargs), False
 
     def get_object(self, user, obj, **kwargs):
+        """
+        Returns the `Follow` object for a regular model object.
+
+            Follow.objects.get(user, random_object)
+            -> <Follow: random_object>
+        """
         rel_name, f_name, m2m = model_map[obj.__class__]
         kwargs.update({f_name: obj})
         return self.filter(**kwargs).get(follower=user)
 
     def get_followers_for_model(self, model):
         """
-        Usage::
-        
-            >>> Follow.objects.get_followers_for_model(Celeb)
-            [<User: devioustree>, <User: flashingpumpkin>]
-            
+        Returns all the followers for a given model
+
         """
         rel_name, f_name, m2m = model_map[model]
         kwargs = {f_name: None}
@@ -60,11 +62,6 @@ class FollowManager(models.Manager):
 
     def get_followers_for_object(self, obj):
         """
-        Usage::
-        
-            >>> Follow.objects.get_followers_for_object(celeb)
-            [<User: devioustree>]
-        
         When given an object (of any type but must have been previously registered), it returns a queryset
         containing all the users following that object
         """
@@ -74,11 +71,7 @@ class FollowManager(models.Manager):
 
     def get_models_user_follows(self, user):
         """
-        Usage:: 
-            
-            >>> Follow.objects.get_models_user_follows(devioustree)
-            [Celeb, Event]
-            
+        Returns all the model classes a user follows.
         """
         model_list = []
         for model, (rel_name, f_name, m2m) in model_map.iteritems():
@@ -89,12 +82,7 @@ class FollowManager(models.Manager):
 
     def get_objects_user_follows(self, user, models):
         """
-        Usage::
-        
-            >>> Follow.objects.get_objects_user_follows(devioustree, Celeb)
-            [<Follow: Andy Ashburner>]
-            >>> Follow.objects.get_objects_user_follows(devioustree, [Celeb, Event])
-            [<Follow: Andy Ashburner>, <Follow: Oscars>]
+        Returns all the objects a user follows from a list of models
         """
         kwargs = {}
         if isinstance(models, list):
@@ -108,11 +96,7 @@ class FollowManager(models.Manager):
 
     def get_everything_user_follows(self, user):
         """
-        Usage::
-            
-            >>> Follow.objects.get_everything_user_follows(devioustree)
-            [<Follow: Andy Ashburner>, <Follow: Oscars>]
-            
+        Return everythign a user follows.            
         """
         return self.filter(follower=user)
 
@@ -140,4 +124,5 @@ class Follow(models.Model):
         for model, (rel_name, f_name, m2m) in model_map.iteritems():
             if hasattr(self, f_name) and getattr(self, f_name):
                 return getattr(self, f_name)
+
 
