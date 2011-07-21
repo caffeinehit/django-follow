@@ -33,3 +33,10 @@ Registering models:
 Querying models:
 
     Have a look at the models.py file :)
+
+
+## Release Notes
+
+v0.4
+
+* `Model.followers` was replaced with `Model.get_followers`

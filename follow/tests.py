@@ -39,7 +39,7 @@ True
 >>> Follow.objects.get_object(flashingpumpkin, devioustree)
 <Follow: devioustree>
 
->>> devioustree.followers()
+>>> devioustree.get_followers()
 [<User: flashingpumpkin>]
 
 """
