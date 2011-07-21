@@ -96,7 +96,7 @@ class FollowManager(models.Manager):
 
     def get_everything_user_follows(self, user):
         """
-        Return everythign a user follows.            
+        Return everything a user follows.            
         """
         return self.filter(follower=user)
 
