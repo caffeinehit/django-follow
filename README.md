@@ -69,7 +69,7 @@ Clone the repository and cd into the project folder:
 django-follow ships a template tag that creates urls and one 
 filter to check if a user follows an object:
 
-	{% load follow %}
+	{% load follow_tags %}
 	{% follow_url object %}
 	{% request.user|is_following:object %}
 
@@ -93,4 +93,3 @@ v0.4 - *BACKWARDS INCOMPATIBLE*
 * Replaced `Follow.get_object` method with read/writable `Follow.target` property
 * `follow.util` moved to `follow.utils`
 * No more M2M following
-* Renamed template tag module to `follow` 

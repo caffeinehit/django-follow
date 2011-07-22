@@ -3,11 +3,11 @@ from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 from django.test import TestCase
 from follow.models import Follow
-from follow.templatetags.follow_tags import _follow_link, _unfollow_link
-from follow.utils import follow, unfollow
+from follow import utils
 
 class FollowTest(TestCase):
     def setUp(self):
+        
         self.lennon = User.objects.create(username='lennon')
         self.lennon.set_password('test')
         self.lennon.save()
@@ -62,10 +62,10 @@ class FollowTest(TestCase):
         
         request = type('Request', (object,), {'user': self.lennon})()
         
-        self.assertEqual(follow_url, _follow_link(self.hendrix))
-        self.assertEqual(unfollow_url, _unfollow_link(self.hendrix))
+        self.assertEqual(follow_url, utils.follow_link(self.hendrix))
+        self.assertEqual(unfollow_url, utils.unfollow_link(self.hendrix))
         
-        tpl = template.Template("""{% load follow %}{% follow_url obj %}""")
+        tpl = template.Template("""{% load follow_tags %}{% follow_url obj %}""")
         ctx = template.Context({
             'obj':self.hendrix,
             'request': request
@@ -73,18 +73,27 @@ class FollowTest(TestCase):
         
         self.assertEqual(follow_url, tpl.render(ctx))
         
-        follow(self.lennon, self.hendrix)
+        utils.follow(self.lennon, self.hendrix)
         
         self.assertEqual(unfollow_url, tpl.render(ctx))
         
-        unfollow(self.lennon, self.hendrix)
+        utils.unfollow(self.lennon, self.hendrix)
         
         self.assertEqual(follow_url, tpl.render(ctx))
         
-        tpl = template.Template("""{% load follow %}{{ request.user|is_following:obj }}""")
+        tpl = template.Template("""{% load follow_tags %}{% follow_url obj user %}""")
+        ctx2 = template.Context({
+            'obj': self.lennon,
+            'user': self.hendrix,
+            'request': request
+        })
+        
+        self.assertEqual(utils.follow_url(self.hendrix, self.lennon), tpl.render(ctx2))
+        
+        tpl = template.Template("""{% load follow_tags %}{{ request.user|is_following:obj }}""")
         
         self.assertEqual("False", tpl.render(ctx))
         
-        follow(self.lennon, self.hendrix)
+        utils.follow(self.lennon, self.hendrix)
         
         self.assertEqual("True", tpl.render(ctx))

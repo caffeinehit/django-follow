@@ -45,7 +45,6 @@ class FollowManager(models.Manager):
             return self.exclude(**{fname:None})
         return self.filter(**{fname:model_or_object})
     
-
 class Follow(models.Model):
     """
     This model allows a user to follow any kind of object. The followed
