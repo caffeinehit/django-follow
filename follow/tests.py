@@ -100,10 +100,16 @@ class FollowTest(TestCase):
         self.assertEqual("True", tpl.render(ctx))
 
     def test_signals(self):
+        handler = type('Handler', (object,), {
+            'inc': lambda self: setattr(self, 'i', getattr(self, 'i') + 1),
+            'i': 0
+        })()
+        
         def follow_handler(user, target, instance, **kwargs):
             self.assertEqual(self.lennon, user)
             self.assertEqual(self.hendrix, target)
             self.assertEqual(True, isinstance(instance, Follow))
+            handler.inc()
             
         signals.followed.connect(follow_handler)
         
@@ -113,6 +119,10 @@ class FollowTest(TestCase):
             self.assertEqual(self.lennon, user)
             self.assertEqual(self.hendrix, target)
             self.assertEqual(True, isinstance(instance, Follow))
+            handler.inc()
+        
+        signals.unfollowed.connect(unfollow_handler)
         
         utils.unfollow(self.lennon, self.hendrix)
         
+        self.assertEqual(2, handler.i)
