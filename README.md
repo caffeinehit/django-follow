@@ -82,6 +82,14 @@ filter to check if a user follows an object:
 * `{% request.user|is_following:object %}`:  
   Returns `True`/`False` if the user follows / does not follow the object.
 
+### Signals
+
+django-follow provides two signals:
+
+* `follow.signals.followed(sender, user, target, instance)`
+* `follow.signals.unfollowed(sender, user, target, instance)`
+
+
 ## Release Notes
 
 v0.4 - *BACKWARDS INCOMPATIBLE*
@@ -94,6 +102,6 @@ v0.4 - *BACKWARDS INCOMPATIBLE*
 * `follow.util` moved to `follow.utils`
 * No more M2M following
 
-
+-----------------
 
 [@flashingpumpkin](http://twitter.com/flashingpumpkin)

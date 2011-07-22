@@ -2,8 +2,9 @@ from django import template
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 from django.test import TestCase
-from follow.models import Follow
+from follow import signals
 from follow import utils
+from follow.models import Follow
 
 class FollowTest(TestCase):
     def setUp(self):
@@ -97,3 +98,21 @@ class FollowTest(TestCase):
         utils.follow(self.lennon, self.hendrix)
         
         self.assertEqual("True", tpl.render(ctx))
+
+    def test_signals(self):
+        def follow_handler(user, target, instance, **kwargs):
+            self.assertEqual(self.lennon, user)
+            self.assertEqual(self.hendrix, target)
+            self.assertEqual(True, isinstance(instance, Follow))
+            
+        signals.followed.connect(follow_handler)
+        
+        utils.follow(self.lennon, self.hendrix)
+        
+        def unfollow_handler(user, target, instance, **kwargs):
+            self.assertEqual(self.lennon, user)
+            self.assertEqual(self.hendrix, target)
+            self.assertEqual(True, isinstance(instance, Follow))
+        
+        utils.unfollow(self.lennon, self.hendrix)
+        

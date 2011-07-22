@@ -1,6 +1,8 @@
 from django.contrib.auth.models import User
 from django.db import models
+from django.db.models.signals import post_save, post_delete
 from follow.registry import model_map
+from follow.signals import followed, unfollowed
 import inspect
 
 class FollowManager(models.Manager):
@@ -74,3 +76,13 @@ class Follow(models.Model):
         
     target = property(fget=_get_target, fset=_set_target)
 
+def follow_dispatch(sender, instance, created=False, **kwargs):
+    if created:
+        followed.send(sender, user=instance.user, target=instance.target, instance=instance)
+
+def unfollow_dispatch(sender, instance, **kwargs):
+    unfollowed.send(sender, user=instance.user, target=instance.target, instance=instance)
+    
+    
+post_save.connect(follow_dispatch, dispatch_uid='follow.follow_dispatch', sender=Follow)
+post_delete.connect(unfollow_dispatch, dispatch_uid='follow.unfollow_dispatch', sender=Follow)
