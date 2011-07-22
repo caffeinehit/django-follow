@@ -12,7 +12,7 @@ django-follow enables your users to follow any model in your Django application.
 * Include `follow.urls` into your URLs if you plan on using the views:
 
 		urlpatterns = patterns('',
-			url('^', include('follow.urls', namespace = 'follow')),
+			url('^', include('follow.urls')),
 		)
 	
 * Register the models you want to be able to follow in your `models.py` files:

@@ -21,7 +21,7 @@ Usage:
    ::
 
        urlpatterns = patterns('',
-           url('^', include('follow.urls', namespace = 'follow')),
+           url('^', include('follow.urls')),
        )
 
 -  Register the models you want to be able to follow in your
