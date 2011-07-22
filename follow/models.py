@@ -1,32 +1,25 @@
-from django.db import models
-
 from django.contrib.auth.models import User
-from django.conf import settings
-
-from util import model_map
+from django.db import models
+from follow.registry import model_map
+import inspect
 
 class FollowManager(models.Manager):
+    def fname(self, model_or_obj):
+        cls = model_or_obj if inspect.isclass(model_or_obj) else model_or_obj.__class__
+        _, fname = model_map[cls]
+        return fname
+    
     def create(self, user, obj, **kwargs):
         """
         Create a new follow link between a user and an object
         of a registered model type.
         
         """
-        follow = super(FollowManager, self).create(follower=user, **kwargs)
-
-        rel_name, f_name, m2m = model_map[obj.__class__]
-        if m2m:
-            field = getattr(follow, f_name)
-            field.add(obj)
-        else:
-            setattr(follow, f_name, obj)
+        follow = Follow(user=user)
+        follow.target = obj
         follow.save()
         return follow
-
-    def is_user_following(self, user, obj):
-        """ Returns `True` or `False` """
-        return user in self.get_followers_for_object(obj)
-
+            
     def get_or_create(self, user, obj, **kwargs):
         """ 
         Almost the same as `FollowManager.objects.create` - behaves the same 
@@ -35,94 +28,50 @@ class FollowManager(models.Manager):
         Returns a tuple with the `Follow` and either `True` or `False`
 
         """
-        if not self.is_user_following(user, obj):
+        if not self.is_following(user, obj):
             return self.create(user, obj, **kwargs), True
+        return self.get_follows(obj).get(user=user), False
+    
+    def is_following(self, user, obj):
+        """ Returns `True` or `False` """
+        return 0 < self.get_follows(obj).filter(user=user).count()
 
-        return self.get_object(user, obj, **kwargs), False
-
-    def get_object(self, user, obj, **kwargs):
+    def get_follows(self, model_or_object):
         """
-        Returns the `Follow` object for a regular model object.
-
-            Follow.objects.get(user, random_object)
-            -> <Follow: random_object>
+        Returns all the followers of a model or object
         """
-        rel_name, f_name, m2m = model_map[obj.__class__]
-        kwargs.update({f_name: obj})
-        return self.filter(**kwargs).get(follower=user)
-
-    def get_followers_for_model(self, model):
-        """
-        Returns all the followers for a given model
-
-        """
-        rel_name, f_name, m2m = model_map[model]
-        kwargs = {f_name: None}
-        return User.objects.filter(following__in=self.exclude(**kwargs)).distinct()
-
-    def get_followers_for_object(self, obj):
-        """
-        When given an object (of any type but must have been previously registered), it returns a queryset
-        containing all the users following that object
-        """
-        rel_name, f_name, m2m = model_map[obj.__class__]
-        kwargs = {f_name: obj}
-        return User.objects.filter(following__in=self.filter(**kwargs)).distinct()
-
-    def get_models_user_follows(self, user):
-        """
-        Returns all the model classes a user follows.
-        """
-        model_list = []
-        for model, (rel_name, f_name, m2m) in model_map.iteritems():
-            kwargs = {f_name: None}
-            if Follow.objects.filter(follower=user).exclude(**kwargs):
-                model_list.append(model)
-        return model_list
-
-    def get_objects_user_follows(self, user, models):
-        """
-        Returns all the objects a user follows from a list of models
-        """
-        kwargs = {}
-        if isinstance(models, list):
-            for model in models:
-                rel_name, f_name, m2m = model_map[model]
-                kwargs[f_name] = None
-        else:
-            rel_name, f_name, m2m = model_map[models]
-            kwargs[f_name] = None
-        return self.exclude(**kwargs).filter(follower=user)
-
-    def get_everything_user_follows(self, user):
-        """
-        Return everything a user follows.            
-        """
-        return self.filter(follower=user)
+        fname = self.fname(model_or_object)
+        if inspect.isclass(model_or_object):
+            return self.exclude(**{fname:None})
+        return self.filter(**{fname:model_or_object})
+    
 
 class Follow(models.Model):
     """
-    This model allows a user to follow any kind of object
+    This model allows a user to follow any kind of object. The followed
+    object is accessible through `Follow.target`.
     """
-    follower = models.ForeignKey(
-        User,
-        blank=False,
-        null=False,
-        related_name='following',
-    )
+    user = models.ForeignKey(User, related_name='following')
 
-    datetime = models.DateTimeField(
-        auto_now_add=True,
-    )
+    datetime = models.DateTimeField(auto_now_add=True)
 
     objects = FollowManager()
 
     def __unicode__(self):
-        return '%s' % self.get_object()
+        return '%s' % self.target
 
-    def get_object(self):
-        for model, (rel_name, f_name, m2m) in model_map.iteritems():
-            if hasattr(self, f_name) and getattr(self, f_name):
-                return getattr(self, f_name)
-
+    def _get_target(self):
+        for _, fname in model_map.values():
+            if hasattr(self, fname) and getattr(self, fname):
+                return getattr(self, fname)
+    
+    def _set_target(self, obj):
+        for _, fname in model_map.values():
+            setattr(self, fname, None)
+        if obj is None:
+            return
+        _, fname = model_map[obj.__class__]
+        setattr(self, fname, obj)
+        
+    target = property(fget=_get_target, fset=_set_target)
 
