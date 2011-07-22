@@ -1,9 +1,8 @@
 from django import template
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, AnonymousUser
 from django.core.urlresolvers import reverse
 from django.test import TestCase
-from follow import signals
-from follow import utils
+from follow import signals, utils
 from follow.models import Follow
 
 class FollowTest(TestCase):
@@ -126,3 +125,6 @@ class FollowTest(TestCase):
         utils.unfollow(self.lennon, self.hendrix)
         
         self.assertEqual(2, handler.i)
+
+    def test_anonymous_is_following(self):
+        self.assertEqual(False, Follow.objects.is_following(AnonymousUser(), self.lennon))

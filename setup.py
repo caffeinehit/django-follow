@@ -10,5 +10,5 @@ setup(
     author='Alen Mujezinovic',
     author_email='alen@caffeinehit.com',
     url='https://github.com/caffeinehit/django-follow',
-    version='0.4.1',
+    version='0.4.2',
 )

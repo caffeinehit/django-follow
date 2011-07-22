@@ -1,4 +1,4 @@
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, AnonymousUser
 from django.db import models
 from django.db.models.signals import post_save, post_delete
 from follow.registry import model_map
@@ -36,6 +36,8 @@ class FollowManager(models.Manager):
     
     def is_following(self, user, obj):
         """ Returns `True` or `False` """
+        if isinstance(user, AnonymousUser):
+            return False        
         return 0 < self.get_follows(obj).filter(user=user).count()
 
     def get_follows(self, model_or_object):
