@@ -76,8 +76,6 @@ Utils
     Makes ``user`` follow ``object``
 -  ``follow.utils.unfollow(user, object)``:
     Makes ``user`` unfollow ``object``
--  ``follow.utils.unfollow(user, object)``:
-    Makes ``user`` unfollow ``object``
 -  ``follow.utils.follow_url(user, object)``:
     Returns the right follow/unfollow URL for ``user`` and ``object``
 -  ``follow.utils.follow_link(object)``:
