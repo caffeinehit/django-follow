@@ -91,7 +91,7 @@ check if a user follows an object:
 
 ::
 
-    {% load follow %}
+    {% load follow_tags %}
     {% follow_url object %}
     {% request.user|is_following:object %}
 
@@ -121,5 +121,5 @@ v0.4 - *BACKWARDS INCOMPATIBLE*
    ``Follow.target`` property
 -  ``follow.util`` moved to ``follow.utils``
 -  No more M2M following
--  Renamed template tag module to ``follow``
 
+`@flashingpumpkin <http://twitter.com/flashingpumpkin>`_

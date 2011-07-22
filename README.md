@@ -93,3 +93,7 @@ v0.4 - *BACKWARDS INCOMPATIBLE*
 * Replaced `Follow.get_object` method with read/writable `Follow.target` property
 * `follow.util` moved to `follow.utils`
 * No more M2M following
+
+
+
+[@flashingpumpkin](http://twitter.com/flashingpumpkin)
