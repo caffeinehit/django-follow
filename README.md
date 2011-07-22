@@ -42,24 +42,34 @@ Clone the repository and cd into the project folder:
 
 * `FollowManager.create(user, obj, **kwargs)`:  
   Makes `user` follow `obj`
+
 * `FollowManager.get_or_create(user, obj, **kwargs)`:  
   Returns a tuple `(Follow, bool)` 
+
 * `FollowManager.is_following(user, obj)`:  
   Returns `bool`
+
 * `FollowManager.get_follows(model_or_object)`:  
   Returns all the `Follow` objects associated with a certain model or object.
 
+
 ### Utils
+
 * `follow.utils.register(model, field_name, related_name, lookup_method_name)`:  
   Registers `model` to django-follow. 
+
 * `follow.utils.follow(user, object)`:  
   Makes `user` follow `object`
+
 * `follow.utils.unfollow(user, object)`:  
   Makes `user` unfollow `object`
+
 * `follow.utils.follow_url(user, object)`:  
   Returns the right follow/unfollow URL for `user` and `object`
+
 * `follow.utils.follow_link(object)`:  
   Returns the following URL for `object`
+  
 * `follow.utils.unfollow_link(object)`:  
   Returns the unfollowing URL for `object`
 
