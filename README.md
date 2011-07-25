@@ -99,6 +99,22 @@ django-follow provides two signals:
 * `follow.signals.followed(sender, user, target, instance)`
 * `follow.signals.unfollowed(sender, user, target, instance)`
 
+To invoke a handler every time a `User` or `Group` object is followed, do something along these lines:
+
+	from django.contrib.auth.models import User
+	from follow import signals
+
+	def user_follow_handler(user, target, instance, **kwargs):
+		send_mail("You were followed", "You have been followed", "no-reply@localhost", [target.email])
+	
+	def group_follow_handler(user, target, instance, **kwargs):
+		send_mail("Group followed", "%s has followed your group" % user, "no-reply@localhost", [[u.email for u in target.user_set.all()]])
+
+	signals.followed.connect(user_follow_handler, sender = User, dispatch_uid = 'follow.user')
+	signals.followed.connect(group_follow_handler, sender = Group, dispatch_uid = 'follow.group')
+
+This works vica versa with the unfollowed handler too.
+
 
 ## Release Notes
 

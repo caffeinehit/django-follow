@@ -1,9 +1,13 @@
 from django import template
-from django.contrib.auth.models import User, AnonymousUser
+from django.contrib.auth.models import User, AnonymousUser, Group
 from django.core.urlresolvers import reverse
 from django.test import TestCase
 from follow import signals, utils
 from follow.models import Follow
+from follow.utils import register
+
+register(User)
+register(Group)
 
 class FollowTest(TestCase):
     def setUp(self):
@@ -12,6 +16,10 @@ class FollowTest(TestCase):
         self.lennon.set_password('test')
         self.lennon.save()
         self.hendrix = User.objects.create(username='hendrix')
+        
+        self.musicians = Group.objects.create()
+        
+        self.lennon.groups.add(self.musicians)        
     
     def test_follow(self):
         follow = Follow.objects.create(self.lennon, self.hendrix)
@@ -99,32 +107,51 @@ class FollowTest(TestCase):
         self.assertEqual("True", tpl.render(ctx))
 
     def test_signals(self):
-        handler = type('Handler', (object,), {
+        Handler = type('Handler', (object,), {
             'inc': lambda self: setattr(self, 'i', getattr(self, 'i') + 1),
             'i': 0
-        })()
+        })
+        user_handler = Handler()
+        group_handler = Handler()
         
-        def follow_handler(user, target, instance, **kwargs):
+        def follow_handler(sender, user, target, instance, **kwargs):
+            self.assertEqual(sender, User)
             self.assertEqual(self.lennon, user)
             self.assertEqual(self.hendrix, target)
             self.assertEqual(True, isinstance(instance, Follow))
-            handler.inc()
-            
-        signals.followed.connect(follow_handler)
+            user_handler.inc()
+        
+        def unfollow_handler(sender, user, target, instance, **kwargs):
+            self.assertEqual(sender, User)
+            self.assertEqual(self.lennon, user)
+            self.assertEqual(self.hendrix, target)
+            self.assertEqual(True, isinstance(instance, Follow))
+            user_handler.inc()
+        
+        def group_follow_handler(sender, **kwargs):
+            self.assertEqual(sender, Group)
+            group_handler.inc()        
+        
+        def group_unfollow_handler(sender, **kwargs):
+            self.assertEqual(sender, Group)
+            group_handler.inc()
+        
+        signals.followed.connect(follow_handler, sender=User, dispatch_uid='userfollow')
+        signals.unfollowed.connect(unfollow_handler, sender=User, dispatch_uid='userunfollow')
+        
+        signals.followed.connect(group_follow_handler, sender=Group, dispatch_uid='groupfollow')
+        signals.unfollowed.connect(group_unfollow_handler, sender=Group, dispatch_uid='groupunfollow')
         
         utils.follow(self.lennon, self.hendrix)
-        
-        def unfollow_handler(user, target, instance, **kwargs):
-            self.assertEqual(self.lennon, user)
-            self.assertEqual(self.hendrix, target)
-            self.assertEqual(True, isinstance(instance, Follow))
-            handler.inc()
-        
-        signals.unfollowed.connect(unfollow_handler)
-        
         utils.unfollow(self.lennon, self.hendrix)
+        self.assertEqual(2, user_handler.i)
         
-        self.assertEqual(2, handler.i)
+        utils.follow(self.lennon, self.musicians)
+        utils.unfollow(self.lennon, self.musicians)
+        
+        self.assertEqual(2, user_handler.i)
+        self.assertEqual(2, group_handler.i)
 
     def test_anonymous_is_following(self):
         self.assertEqual(False, Follow.objects.is_following(AnonymousUser(), self.lennon))
+

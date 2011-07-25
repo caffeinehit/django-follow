@@ -80,10 +80,10 @@ class Follow(models.Model):
 
 def follow_dispatch(sender, instance, created=False, **kwargs):
     if created:
-        followed.send(sender, user=instance.user, target=instance.target, instance=instance)
+        followed.send(instance.target.__class__, user=instance.user, target=instance.target, instance=instance)
 
 def unfollow_dispatch(sender, instance, **kwargs):
-    unfollowed.send(sender, user=instance.user, target=instance.target, instance=instance)
+    unfollowed.send(instance.target.__class__, user=instance.user, target=instance.target, instance=instance)
     
     
 post_save.connect(follow_dispatch, dispatch_uid='follow.follow_dispatch', sender=Follow)
