@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 from setuptools import setup, find_packages
+import follow
 
 setup(
     name='django-follow',
@@ -10,5 +11,5 @@ setup(
     author='Alen Mujezinovic',
     author_email='alen@caffeinehit.com',
     url='https://github.com/caffeinehit/django-follow',
-    version='0.4.2',
+    version=follow.__version__,
 )
