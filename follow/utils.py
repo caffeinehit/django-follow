@@ -39,6 +39,7 @@ def unfollow(user, obj):
     try:
         follow = Follow.objects.get_follows(obj).get(user=user)
         follow.delete()
+        return follow 
     except Follow.DoesNotExist:
         pass
 
