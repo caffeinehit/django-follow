@@ -16,11 +16,11 @@ def check(func):
             if 'next' in request.GET:
                 return HttpResponseRedirect(request.GET.get('next'))
             return HttpResponseRedirect(follow.target.get_absolute_url())
-        except AttributeError:
+        except (AttributeError, TypeError):
             if 'HTTP_REFERER' in request.META:
                 return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
             return HttpResponseServerError('"%s" object of type ``%s`` has no method ``get_absolute_url()``.' % (
-                unicode(follow.get_object()), follow.get_object().__class__))
+                unicode(follow.target), follow.target.__class__))
     return iCheck
 
 

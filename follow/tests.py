@@ -63,6 +63,16 @@ class FollowTest(TestCase):
         response = self.client.get(unfollow_url)
         self.assertEqual(302, response.status_code)
 
+    def test_no_absolute_url(self):
+        self.client.login(username = 'lennon', password= 'test')
+
+        get_absolute_url = User.get_absolute_url
+        User.get_absolute_url = None
+
+        follow_url = utils.follow_link(self.hendrix)
+
+        response = self.client.get(follow_url)
+        self.assertEqual(500, response.status_code)
 
     def test_template_tags(self):
         follow_url = reverse('follow', args=['auth', 'user', self.hendrix.id])
@@ -154,4 +164,6 @@ class FollowTest(TestCase):
 
     def test_anonymous_is_following(self):
         self.assertEqual(False, Follow.objects.is_following(AnonymousUser(), self.lennon))
+
+    
 
