@@ -54,24 +54,35 @@ class FollowTest(TestCase):
         follow_url = reverse('follow', args=['auth', 'user', self.hendrix.id])
         unfollow_url = reverse('follow', args=['auth', 'user', self.hendrix.id])
 
-        response = self.client.get(follow_url)
+        response = self.client.post(follow_url)
         self.assertEqual(302, response.status_code)
         
-        response = self.client.get(follow_url)
+        response = self.client.post(follow_url)
         self.assertEqual(302, response.status_code)
+        
+        response = self.client.post(unfollow_url)
+        self.assertEqual(302, response.status_code)
+    
+    def test_get_fail(self):
+        self.client.login(username='lennon', password='test')
+        follow_url = reverse('follow', args=['auth', 'user', self.hendrix.id])
+        unfollow_url = reverse('follow', args=['auth', 'user', self.hendrix.id])
+        
+        response = self.client.get(follow_url)
+        self.assertEqual(400, response.status_code)
         
         response = self.client.get(unfollow_url)
-        self.assertEqual(302, response.status_code)
-
+        self.assertEqual(400, response.status_code)
+        
     def test_no_absolute_url(self):
-        self.client.login(username = 'lennon', password= 'test')
+        self.client.login(username='lennon', password='test')
 
         get_absolute_url = User.get_absolute_url
         User.get_absolute_url = None
 
         follow_url = utils.follow_link(self.hendrix)
 
-        response = self.client.get(follow_url)
+        response = self.client.post(follow_url)
         self.assertEqual(500, response.status_code)
 
     def test_template_tags(self):
@@ -115,6 +126,16 @@ class FollowTest(TestCase):
         utils.follow(self.lennon, self.hendrix)
         
         self.assertEqual("True", tpl.render(ctx))
+        
+        tpl = template.Template("""{% load follow_tags %}{% follow_form obj %}""")
+        
+        rendered = u"""\n<form action="%s" method="post">\n\t\n\t\t<input type="submit" value="Follow" />\n\t\n</form>""" % unfollow_url
+        
+        self.assertEqual(rendered, tpl.render(ctx))
+        
+        tpl = template.Template("""{% load follow_tags %}{% follow_form obj "follow/form.html" %}""")
+        
+        self.assertEqual(rendered, tpl.render(ctx))
 
     def test_signals(self):
         Handler = type('Handler', (object,), {

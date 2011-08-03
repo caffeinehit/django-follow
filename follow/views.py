@@ -1,7 +1,7 @@
 from django.contrib.auth.decorators import login_required
 from django.db.models.loading import cache
 from django.http import HttpResponse, HttpResponseRedirect, \
-    HttpResponseServerError
+    HttpResponseServerError, HttpResponseBadRequest
 from follow.utils import follow as _follow, unfollow as _unfollow
 
 def check(func):
@@ -9,6 +9,8 @@ def check(func):
     Check the permissions, http method and login state.
     """
     def iCheck(request, *args, **kwargs):
+        if not request.method == "POST":
+            return HttpResponseBadRequest("Must be POST request.")
         follow = func(request, *args, **kwargs)
         if request.is_ajax():
             return HttpResponse('ok')

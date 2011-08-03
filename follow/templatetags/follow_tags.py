@@ -47,3 +47,27 @@ def is_following(user, obj):
     return Follow.objects.is_following(user, obj)
 
 
+@register.tag
+def follow_form(parser, token):
+    """
+    Renders the following form. This can optionally take a path to a custom 
+    template. 
+    
+    Usage::
+    
+        {% follow_form object %}
+        {% follow_form object "app/follow_form.html" %}
+        
+    """
+    bits = token.split_contents()
+    return FollowFormNode(*bits[1:])
+
+class FollowFormNode(template.Node):
+    def __init__(self, obj, tpl=None):
+        self.obj = template.Variable(obj)
+        self.template = tpl[1:-1] if tpl else 'follow/form.html'
+    
+    def render(self, context):
+        ctx = {'object': self.obj.resolve(context)}
+        return template.loader.render_to_string(self.template, ctx,
+            context_instance=context)

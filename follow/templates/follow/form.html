@@ -1,0 +1,8 @@
+{% load follow_tags %}
+<form action="{% follow_url object %}" method="post">
+	{% if request.user|is_following:object %}
+		<input type="submit" value="Follow" />
+	{% else %}
+		<input type="submit" value="Unfollow" />
+	{% endif %}
+</form>

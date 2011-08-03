@@ -118,6 +118,10 @@ This works vica versa with the unfollowed handler too.
 
 ## Release Notes
 
+v0.5 - *BACKWARDS INCOMPATIBLE*
+
+* The follow and unfollow views now only accept POST requests
+
 v0.4 - *BACKWARDS INCOMPATIBLE*
 
 * Made the manager _a lot_ lighter.
