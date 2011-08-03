@@ -94,14 +94,17 @@ Utils
 Template Tags
 ~~~~~~~~~~~~~
 
-django-follow ships a template tag that creates urls and one filter to
-check if a user follows an object:
+django-follow ships a template tag that creates urls, a filter to check
+if a user follows an object and a template tag to render the follow
+form.
 
 ::
 
     {% load follow_tags %}
     {% follow_url object %}
     {% request.user|is_following:object %}
+    {% follow_form object %}
+    {% follow_form object "your/custom/template.html" %}
 
 -  ``{% follow_url object %}``:
     Returns the URL to either follow or unfollow the object, depending
@@ -114,6 +117,12 @@ check if a user follows an object:
 -  ``{% request.user|is_following:object %}``:
     Returns ``True``/``False`` if the user follows / does not follow the
    object.
+
+-  ``{% follow_form object %}``:
+    Renders a form to follow a given object.
+
+-  \`{% follow\_form object "your/custom/template.html" %}:
+    Renders the form with a custom template.
 
 Signals
 ~~~~~~~

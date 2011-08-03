@@ -17,6 +17,8 @@ def check(func):
         try:
             if 'next' in request.GET:
                 return HttpResponseRedirect(request.GET.get('next'))
+            if 'next' in request.POST:
+                return HttpResponseRedirect(request.POST.get('next'))
             return HttpResponseRedirect(follow.target.get_absolute_url())
         except (AttributeError, TypeError):
             if 'HTTP_REFERER' in request.META:
