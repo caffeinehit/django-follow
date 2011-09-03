@@ -14,6 +14,7 @@ Installation:
 Usage:
 ------
 
+
 -  Add ``follow`` to your ``INSTALLED_APPS``
 -  Include ``follow.urls`` into your URLs if you plan on using the
    views:
@@ -31,12 +32,13 @@ Usage:
 
        from django.db import models
        from follow import utils
-
+       
        class MyModel(models.Model):
            field = models.CharField(max_length = 255)
-
-
+       
+       
        utils.register(MyModel)
+
 
 Test
 ----
@@ -57,46 +59,50 @@ API
 Manager
 ~~~~~~~
 
--  ``FollowManager.create(user, obj, **kwargs)``:
-    Makes ``user`` follow ``obj``
 
--  ``FollowManager.get_or_create(user, obj, **kwargs)``:
-    Returns a tuple ``(Follow, bool)``
+-  ``Follow.objects.create(user, obj, **kwargs)``:
+   Makes ``user`` follow ``obj``
 
--  ``FollowManager.is_following(user, obj)``:
-    Returns ``bool``
+-  ``Follow.objects.get_or_create(user, obj, **kwargs)``:
+   Returns a tuple ``(Follow, bool)``
 
--  ``FollowManager.get_follows(model_or_object)``:
-    Returns all the ``Follow`` objects associated with a certain model
+-  ``Follow.objects.is_following(user, obj)``:
+   Returns ``bool``
+
+-  ``Follow.objects.get_follows(model_or_object)``:
+   Returns all the ``Follow`` objects associated with a certain model
    or object.
+
 
 Utils
 ~~~~~
 
+
 -  ``follow.utils.register(model, field_name, related_name, lookup_method_name)``:
-    Registers ``model`` to django-follow.
+   Registers ``model`` to django-follow.
 
 -  ``follow.utils.follow(user, object)``:
-    Makes ``user`` follow ``object``
+   Makes ``user`` follow ``object``
 
 -  ``follow.utils.unfollow(user, object)``:
-    Makes ``user`` unfollow ``object``
+   Makes ``user`` unfollow ``object``
 
 -  ``follow.utils.follow_url(user, object)``:
-    Returns the right follow/unfollow URL for ``user`` and ``object``
+   Returns the right follow/unfollow URL for ``user`` and ``object``
 
 -  ``follow.utils.follow_link(object)``:
-    Returns the following URL for ``object``
+   Returns the following URL for ``object``
 
 -  ``follow.utils.unfollow_link(object)``:
-    Returns the unfollowing URL for ``object``
+   Returns the unfollowing URL for ``object``
+
 
 Template Tags
 ~~~~~~~~~~~~~
 
-django-follow ships a template tag that creates urls, a filter to check
-if a user follows an object and a template tag to render the follow
-form.
+django-follow ships a template tag that creates urls, a filter to
+check if a user follows an object and a template tag to render the
+follow form.
 
 ::
 
@@ -106,28 +112,31 @@ form.
     {% follow_form object %}
     {% follow_form object "your/custom/template.html" %}
 
+
 -  ``{% follow_url object %}``:
-    Returns the URL to either follow or unfollow the object, depending
+   Returns the URL to either follow or unfollow the object, depending
    on whether ``request.user`` is already following the object.
 
 -  ``{% follow_url object other_user %}``:
-    Same as above - but instead of resolving for ``request.user`` it
+   Same as above - but instead of resolving for ``request.user`` it
    resolves for any user you pass in.
 
 -  ``{% request.user|is_following:object %}``:
-    Returns ``True``/``False`` if the user follows / does not follow the
-   object.
+   Returns ``True``/``False`` if the user follows / does not follow
+   the object.
 
 -  ``{% follow_form object %}``:
-    Renders a form to follow a given object.
+   Renders a form to follow a given object.
 
 -  \`{% follow\_form object "your/custom/template.html" %}:
-    Renders the form with a custom template.
+   Renders the form with a custom template.
+
 
 Signals
 ~~~~~~~
 
 django-follow provides two signals:
+
 
 -  ``follow.signals.followed(sender, user, target, instance)``
 -  ``follow.signals.unfollowed(sender, user, target, instance)``
@@ -139,13 +148,13 @@ followed, do something along these lines:
 
     from django.contrib.auth.models import User
     from follow import signals
-
+    
     def user_follow_handler(user, target, instance, **kwargs):
         send_mail("You were followed", "You have been followed", "no-reply@localhost", [target.email])
-
+    
     def group_follow_handler(user, target, instance, **kwargs):
         send_mail("Group followed", "%s has followed your group" % user, "no-reply@localhost", [[u.email for u in target.user_set.all()]])
-
+    
     signals.followed.connect(user_follow_handler, sender = User, dispatch_uid = 'follow.user')
     signals.followed.connect(group_follow_handler, sender = Group, dispatch_uid = 'follow.group')
 
@@ -156,9 +165,11 @@ Release Notes
 
 v0.5 - *BACKWARDS INCOMPATIBLE*
 
+
 -  The follow and unfollow views now only accept POST requests
 
 v0.4 - *BACKWARDS INCOMPATIBLE*
+
 
 -  Made the manager *a lot* lighter.
 -  Removed ``Model.followers`` method
@@ -173,3 +184,5 @@ v0.4 - *BACKWARDS INCOMPATIBLE*
 --------------
 
 `@flashingpumpkin <http://twitter.com/flashingpumpkin>`_
+
+
