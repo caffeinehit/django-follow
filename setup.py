@@ -12,7 +12,7 @@ setup(
     author_email='alen@caffeinehit.com',
     url='https://github.com/caffeinehit/django-follow',
     include_package_data=True,
-    package_data={'follow': 'templates/follow/*html'},
+    package_data={'follow': ['templates/follow/*html']},
     zip_safe=False,
     version=follow.__version__,
 )
