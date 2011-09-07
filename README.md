@@ -40,16 +40,16 @@ Clone the repository and cd into the project folder:
 
 ### Manager
 
-* `FollowManager.create(user, obj, **kwargs)`:  
+* `Follow.objects.create(user, obj, **kwargs)`:  
   Makes `user` follow `obj`
 
-* `FollowManager.get_or_create(user, obj, **kwargs)`:  
+* `Follow.objects.get_or_create(user, obj, **kwargs)`:  
   Returns a tuple `(Follow, bool)` 
 
-* `FollowManager.is_following(user, obj)`:  
+* `Follow.objects.is_following(user, obj)`:  
   Returns `bool`
 
-* `FollowManager.get_follows(model_or_object)`:  
+* `Follow.objects.get_follows(model_or_object)`:  
   Returns all the `Follow` objects associated with a certain model or object.
 
 
