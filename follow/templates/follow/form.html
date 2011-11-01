@@ -2,8 +2,8 @@
 <form action="{% follow_url object %}" method="post">
 	{% csrf_token %}
 	{% if request.user|is_following:object %}
-		<input type="submit" value="Follow" />
-	{% else %}
 		<input type="submit" value="Unfollow" />
+	{% else %}
+		<input type="submit" value="Follow" />
 	{% endif %}
 </form>
