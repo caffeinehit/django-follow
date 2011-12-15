@@ -64,9 +64,14 @@ class Follow(models.Model):
         return '%s' % self.target
 
     def _get_target(self):
-        for _, fname in model_map.values():
-            if hasattr(self, fname) and getattr(self, fname):
-                return getattr(self, fname)
+        for Model, (_, fname) in model_map.iteritems():
+            try:
+                if hasattr(self, fname) and getattr(self, fname):
+                    return getattr(self, fname)
+            except Model.DoesNotExist:
+                # In case the target was deleted in the previous transaction 
+                # it's already gone from the db and this throws DoesNotExist.
+                return None
     
     def _set_target(self, obj):
         for _, fname in model_map.values():
@@ -83,7 +88,13 @@ def follow_dispatch(sender, instance, created=False, **kwargs):
         followed.send(instance.target.__class__, user=instance.user, target=instance.target, instance=instance)
 
 def unfollow_dispatch(sender, instance, **kwargs):
-    unfollowed.send(instance.target.__class__, user=instance.user, target=instance.target, instance=instance)
+    
+    unfollowed.send(
+        instance.target.__class__, 
+        user=getattr(instance, 'user', None), 
+        target=getattr(instance, 'target', None), 
+        instance=instance
+    )
     
     
 post_save.connect(follow_dispatch, dispatch_uid='follow.follow_dispatch', sender=Follow)
