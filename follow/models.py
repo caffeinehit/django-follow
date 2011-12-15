@@ -88,13 +88,20 @@ def follow_dispatch(sender, instance, created=False, **kwargs):
         followed.send(instance.target.__class__, user=instance.user, target=instance.target, instance=instance)
 
 def unfollow_dispatch(sender, instance, **kwargs):
+    # FIXME: When deleting out of the admin, django *leaves* the transaction
+    # management after the user is deleted and then starts deleting all the
+    # associated objects. This breaks the unfollow signal. Looking up 
+    # `instance.user` will throw a `DoesNotExist` exception.  The offending
+    # code is in django/db/models/deletion.py#70
+    # At least that's what the error report looks like and I'm a bit short 
+    # on time to investigate properly. 
+    # Unfollow handlers should be aware that both target and user can be `None`
+    try:
+        user = instance.user
+    except User.DoesNotExist:
+        user = None
     
-    unfollowed.send(
-        instance.target.__class__, 
-        user=getattr(instance, 'user', None), 
-        target=getattr(instance, 'target', None), 
-        instance=instance
-    )
+    unfollowed.send(instance.target.__class__, user = user, target = instance.target, instance = instance)
     
     
 post_save.connect(follow_dispatch, dispatch_uid='follow.follow_dispatch', sender=Follow)

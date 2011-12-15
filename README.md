@@ -124,6 +124,11 @@ To invoke a handler every time a `User` or `Group` object is followed, do someth
 
 This works vica versa with the unfollowed handler too.
 
+**NOTE**
+
+When handling `follow.signals.unfollowed` both `user` and/or `target` can be
+`None`. Django's admin for example will first delete the user resulting in
+`instance.user` to throw `DoesNotExist`. Beware.
 
 ## Release Notes
 
