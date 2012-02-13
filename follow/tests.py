@@ -10,6 +10,8 @@ register(User)
 register(Group)
 
 class FollowTest(TestCase):
+    urls = 'follow.urls'
+
     def setUp(self):
         
         self.lennon = User.objects.create(username='lennon')
