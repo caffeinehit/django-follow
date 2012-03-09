@@ -61,7 +61,7 @@ class Follow(models.Model):
     objects = FollowManager()
 
     def __unicode__(self):
-        return '%s' % self.target
+        return u'%s' % self.target
 
     def _get_target(self):
         for Model, (_, fname) in model_map.iteritems():
