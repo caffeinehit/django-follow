@@ -1,5 +1,7 @@
 # django-follow
 
+![](https://secure.travis-ci.org/caffeinehit/django-follow.png)
+
 django-follow enables your users to follow any model in your Django application.
 
 ## Installation:

@@ -7,7 +7,7 @@ setup(
     name='django-follow',
     description='Application which enables following features for users. Can be used for contact books or whatnot',
     long_description=open('README.rst').read(),
-    packages=['follow', 'follow.templatetags'],
+    packages=find_packages(),
     author='Alen Mujezinovic',
     author_email='alen@caffeinehit.com',
     url='https://github.com/caffeinehit/django-follow',
