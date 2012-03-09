@@ -51,7 +51,7 @@ Clone the repository and cd into the project folder:
 
 ::
 
-    cd test_project/
+    cd example/
     python manage.py test follow
 
 API
@@ -69,9 +69,15 @@ Manager
 -  ``Follow.objects.is_following(user, obj)``:
     Returns ``bool``
 
--  ``Follow.objects.get_follows(model_or_object)``:
-    Returns all the ``Follow`` objects associated with a certain model
-   or object.
+-  ``Follow.objects.get_follows(model_or_object_or_queryset)``:
+    Returns all the ``Follow`` objects associated with a certain model,
+   object or queryset.
+
+**Note on performance**
+
+I advise against against using ``Follow.objects.is_following`` too often
+in one request / response cycle on single objects. Use it on querysets
+to avoid stacking up too many queries.
 
 Utils
 ~~~~~
@@ -84,6 +90,9 @@ Utils
 
 -  ``follow.utils.unfollow(user, object)``:
     Makes ``user`` unfollow ``object``
+
+-  ``follow.utils.toggle(user, object)``:
+    Toggles ``user``'s follow status of ``object``
 
 -  ``follow.utils.follow_url(user, object)``:
     Returns the right follow/unfollow URL for ``user`` and ``object``
