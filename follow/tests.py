@@ -56,13 +56,19 @@ class FollowTest(TestCase):
         utils.toggle(self.lennon, self.hendrix)
         self.assertEqual(1, len(self.hendrix.get_follows()))
         
+    def test_get_follows_for_queryset(self):
+        utils.follow(self.hendrix, self.lennon)
+        utils.follow(self.lennon, self.hendrix)
         
+        result = Follow.objects.get_follows(User.objects.all())
+        self.assertEqual(2, result.count())
     
     def test_follow_http(self):
         self.client.login(username='lennon', password='test')
         
         follow_url = reverse('follow', args=['auth', 'user', self.hendrix.id])
         unfollow_url = reverse('follow', args=['auth', 'user', self.hendrix.id])
+        toggle_url = reverse('toggle', args=['auth', 'user', self.hendrix.id])
 
         response = self.client.post(follow_url)
         self.assertEqual(302, response.status_code)
@@ -71,6 +77,9 @@ class FollowTest(TestCase):
         self.assertEqual(302, response.status_code)
         
         response = self.client.post(unfollow_url)
+        self.assertEqual(302, response.status_code)
+        
+        response = self.client.post(toggle_url)
         self.assertEqual(302, response.status_code)
     
     def test_get_fail(self):

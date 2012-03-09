@@ -1,14 +1,21 @@
 from django.contrib.auth.models import User, AnonymousUser
 from django.db import models
+from django.db.models.query import QuerySet
 from django.db.models.signals import post_save, post_delete
 from follow.registry import model_map
 from follow.signals import followed, unfollowed
 import inspect
 
 class FollowManager(models.Manager):
-    def fname(self, model_or_obj):
-        cls = model_or_obj if inspect.isclass(model_or_obj) else model_or_obj.__class__
-        _, fname = model_map[cls]
+    def fname(self, model_or_obj_or_qs):
+        """ 
+        Return the field name on the :class:`Follow` model for ``model_or_obj_or_qs``.
+        """
+        if isinstance(model_or_obj_or_qs, QuerySet):
+            _, fname = model_map[model_or_obj_or_qs.model]
+        else:
+            cls = model_or_obj_or_qs if inspect.isclass(model_or_obj_or_qs) else model_or_obj_or_qs.__class__
+            _, fname = model_map[cls]
         return fname
     
     def create(self, user, obj, **kwargs):
@@ -40,14 +47,19 @@ class FollowManager(models.Manager):
             return False        
         return 0 < self.get_follows(obj).filter(user=user).count()
 
-    def get_follows(self, model_or_object):
+    def get_follows(self, model_or_obj_or_qs):
         """
-        Returns all the followers of a model or object
+        Returns all the followers of a model, an object or a queryset.
         """
-        fname = self.fname(model_or_object)
-        if inspect.isclass(model_or_object):
+        fname = self.fname(model_or_obj_or_qs)
+        
+        if isinstance(model_or_obj_or_qs, QuerySet):
+            return self.filter(**{'%s__in' % fname: model_or_obj_or_qs})
+        
+        if inspect.isclass(model_or_obj_or_qs):
             return self.exclude(**{fname:None})
-        return self.filter(**{fname:model_or_object})
+
+        return self.filter(**{fname:model_or_obj_or_qs})
     
 class Follow(models.Model):
     """
@@ -101,7 +113,7 @@ def unfollow_dispatch(sender, instance, **kwargs):
     except User.DoesNotExist:
         user = None
     
-    unfollowed.send(instance.target.__class__, user = user, target = instance.target, instance = instance)
+    unfollowed.send(instance.target.__class__, user=user, target=instance.target, instance=instance)
     
     
 post_save.connect(follow_dispatch, dispatch_uid='follow.follow_dispatch', sender=Follow)

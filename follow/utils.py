@@ -52,13 +52,15 @@ def toggle(user, obj):
 
 
 def follow_link(object):
-    return reverse('follow', args=[object._meta.app_label, object._meta.object_name.lower(), object.pk])
+    return reverse('follow.views.toggle', args=[object._meta.app_label, object._meta.object_name.lower(), object.pk])
 
 def unfollow_link(object):
-    return reverse('unfollow', args=[object._meta.app_label, object._meta.object_name.lower(), object.pk])
+    return reverse('follow.views.toggle', args=[object._meta.app_label, object._meta.object_name.lower(), object.pk])
+
+def toggle_link(object):
+    return reverse('follow.views.toggle', args=[object._meta.app_label, object._meta.object_name.lower(), object.pk])
 
 def follow_url(user, obj):
     """ Returns the right follow/unfollow url """
-    if Follow.objects.is_following(user, obj):
-        return unfollow_link(obj)
-    return follow_link(obj)
+    return toggle_link(obj)
+

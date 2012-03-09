@@ -6,5 +6,5 @@ python:
 install: 
     - pip install -r travis.txt --use-mirrors
     - python setup.py develop
-script: python example/manage.py test -v2
+script: python example/manage.py test follow -v2
   
