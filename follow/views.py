@@ -29,7 +29,6 @@ def check(func):
             return HttpResponseServerError('No follow object and `next` parameter found.')
     return iCheck
 
-
 @login_required
 @check
 def follow(request, app, model, id):
@@ -43,3 +42,5 @@ def unfollow(request, app, model, id):
     model = cache.get_model(app, model)
     obj = model.objects.get(pk=id)
     return _unfollow(request.user, obj)
+
+

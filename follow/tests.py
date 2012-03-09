@@ -47,6 +47,14 @@ class FollowTest(TestCase):
         
         result = self.lennon.get_follows()
         self.assertEqual(0, len(result), result)
+        
+        utils.toggle(self.lennon, self.hendrix)
+        self.assertEqual(0, len(self.hendrix.get_follows()))
+        
+        utils.toggle(self.lennon, self.hendrix)
+        self.assertEqual(1, len(self.hendrix.get_follows()))
+        
+        
     
     def test_follow_http(self):
         self.client.login(username='lennon', password='test')
