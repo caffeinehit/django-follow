@@ -138,7 +138,7 @@ class FollowTest(TestCase):
         
         self.assertEqual(utils.follow_url(self.hendrix, self.lennon), tpl.render(ctx2))
         
-        tpl = template.Template("""{% load follow_tags %}{{ request.user|is_following:obj }}""")
+        tpl = template.Template("""{% load follow_tags %}{% if request.user|is_following:obj %}True{% else %}False{% endif %}""")
         
         self.assertEqual("False", tpl.render(ctx))
         
