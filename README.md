@@ -28,6 +28,10 @@ django-follow enables your users to follow any model in your Django application.
 
 		utils.register(MyModel)
 
+**NOTE** You must register your models before running `syncdb` or you
+  will run into the issue described in [django-follow/issues/16](https://github.com/caffeinehit/django-follow/issues/16)
+
+
 ## Test
 
 The repository includes a sample project and application that is configured
