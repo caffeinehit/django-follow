@@ -4,6 +4,7 @@ django-follow
 .. figure:: https://secure.travis-ci.org/caffeinehit/django-follow.png
    :align: center
    :alt: 
+
 django-follow enables your users to follow any model in your Django
 application.
 
@@ -40,6 +41,10 @@ Usage:
 
 
        utils.register(MyModel)
+
+**NOTE** You must register your models before running ``syncdb`` or you
+will run into the issue described in
+`django-follow/issues/16 <https://github.com/caffeinehit/django-follow/issues/16>`_
 
 Test
 ----
